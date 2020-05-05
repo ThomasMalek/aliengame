@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "967103008503",
+    "firebase_url": "https://aliengame-5b342.firebaseio.com",
+    "project_id": "aliengame-5b342",
+    "storage_bucket": "aliengame-5b342.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:967103008503:android:2f9d9de900471e135c4df2",
+        "android_client_info": {
+          "package_name": "thomasmalek.aliens"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "967103008503-7pi012tu8i7rr0o9hugu0pvbg7rcrnl7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAK0zBhUTZeX5ujv8AdQqkjg0mMV-SedzY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "967103008503-7pi012tu8i7rr0o9hugu0pvbg7rcrnl7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

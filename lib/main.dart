@@ -26,22 +26,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return SafeArea(
       child: Scaffold(
           body: Column(
-        children: <Widget>[
-          Column(
-            children: <Widget>[
-              Container(
-                width: 50.0,
-                height: 50.0,
-                color: Colors.grey,
-              ),
-              Container(
-                width: 50.0,
-                height: 50.0,
-                color: Colors.grey,
-              ),
-            ],
-          )
-        ],
+        children: <Widget>[],
       )),
     );
   }
