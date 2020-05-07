@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'gamepage.dart';
+import 'waitscreen.dart';
 import 'test.dart';
+import 'gamefull.dart';
+import 'dart:math';
 
 void main() => runApp(MyApp());
 
@@ -10,8 +12,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(title: 'Aliens', initialRoute: '/', routes: {
       '/': (context) => MyHomePage(),
-      '/game': (context) => GamePage(),
-//      '/chooser': (context) => Chooser(),
+      '/waitscreen': (context) => WaitScreen(),
+      '/gamefull': (context) => GameFull(),
     });
   }
 }
@@ -22,38 +24,118 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String name = 'Player1';
-  String avatar = 'www.google.com/imageurl.png';
+  String name = 'Player';
+  int playeramount;
+  String userID;
 
-
-  void initState() {
-    //put in your initialization code here (NO UI BUILDS)
-    print('Loading Home Page');
-  }
-
+  void initState() {}
 
   saveTestData() async {
-    final resp = await pushDoc('players', {'name':name, 'avatar': avatar});
-    print(resp);
+    String avatarpic = avatarGenerator();
+    String avatarpicfinal = 'images/avatar$avatarpic.png';
+    final resp =
+        await pushDoc('players', {'name': name, 'avatar': avatarpicfinal});
+    userID = resp;
   }
 
+  String avatarGenerator() {
+    Random rnd = new Random();
+    int min = 1;
+    int max = 40;
+    String avatarnumber = (min + rnd.nextInt(max - min)).toString();
+    return (avatarnumber);
+  }
 
+  void loginCheck() {
+    checkPlayers();
+    if (playeramount > 10) {
+      Navigator.pushNamed(context, '/gamefull');
+    } else {
+      saveTestData();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WaitScreen(userID: userID),
+        ),
+      );
+    }
+  }
+
+  void checkPlayers() async {
+    playeramount = await playerCount();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-          body: Column(
-        children: <Widget>[
-          Center(
-            child: FlatButton(
-              child: Text('Save Name'),
-              color: Colors.blue,
-              onPressed: () {saveTestData();},
-            ),
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          title: Text(
+            'Hostile Takeover',
+            style: TextStyle(fontFamily: 'Alien', fontSize: 35.0),
           ),
-        ],
-      )),
+          centerTitle: true,
+          backgroundColor: Colors.green,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Hero(
+                tag: 'logo',
+                child: Image(
+                  image: AssetImage('images/alienface.png'),
+                  width: 150.0,
+                  height: 150.0,
+                ),
+              ),
+              SizedBox(
+                height: 45.0,
+              ),
+              Container(
+                width: 300.0,
+                child: TextField(
+                  showCursor: false,
+                  style: TextStyle(
+                      color: Colors.greenAccent,
+                      fontFamily: 'Alien',
+                      fontSize: 35.0),
+                  onChanged: (text) {
+                    name = text;
+                  },
+                  textAlign: TextAlign.center,
+                  decoration: InputDecoration(
+                      hintStyle: TextStyle(
+                          color: Colors.greenAccent,
+                          fontFamily: 'Alien',
+                          fontSize: 35.0),
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter Your Name'),
+                ),
+              ),
+              SizedBox(
+                height: 45.0,
+              ),
+              FlatButton(
+                  child: Text(
+                    'Enlist',
+                    style: TextStyle(fontFamily: 'Alien', fontSize: 40.0),
+                  ),
+                  color: Colors.green,
+                  onPressed: () {
+                    if (playeramount == null) {
+                      checkPlayers();
+                      loginCheck();
+                    } else {
+                      loginCheck();
+                    }
+                  }),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
