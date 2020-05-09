@@ -31,10 +31,17 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {}
 
   saveTestData() async {
+    List players = await getPlayerList();
+    var resp;
     String avatarpic = avatarGenerator();
     String avatarpicfinal = 'images/avatar$avatarpic.png';
-    final resp =
-        await pushDoc('players', {'name': name, 'avatar': avatarpicfinal});
+    if (players.length == 0) {
+      resp = await pushDoc(
+          'players', {'name': name, 'avatar': avatarpicfinal, 'origin': true});
+    } else {
+      resp = await pushDoc(
+          'players', {'name': name, 'avatar': avatarpicfinal, 'origin': false});
+    }
     userID = resp;
   }
 
