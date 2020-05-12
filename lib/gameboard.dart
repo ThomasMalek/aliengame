@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'test.dart';
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GameScreen extends StatefulWidget {
   String userID;
@@ -9,14 +11,37 @@ class GameScreen extends StatefulWidget {
   _GameScreenState createState() => _GameScreenState();
 }
 
+enum Players {
+  Thing,
+}
+
 class _GameScreenState extends State<GameScreen> {
+  Firestore _firestore = Firestore.instance;
   double screenwidth;
   double screenheight;
+  List players = [];
+  List rounds = [];
+  var theTimer;
 
   void initState() {
-    print(widget.userID);
-    print(widget.gameUID);
+    autoUpdater();
   }
+
+  void dataSetup() async {
+    players = await getPlayerLists(widget.gameUID);
+    rounds = await getRoundsList(widget.gameUID);
+  }
+
+  void autoUpdater() {
+    const oneSec = const Duration(seconds: 1);
+    theTimer = Timer.periodic(oneSec, (Timer t) => dataSetup());
+  }
+
+  void round() async {
+    leaderSelect(widget.gameUID, widget.userID);
+  }
+
+  void screendata() {}
 
   List<Widget> cityDisplay(list) {
     List<Widget> display = [];
@@ -29,6 +54,45 @@ class _GameScreenState extends State<GameScreen> {
       ));
     }
     return (display);
+  }
+
+  Future giveChoice() {
+    return (showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Choose General'),
+            content: setupAlertDialoadContainer(),
+          );
+        }));
+  }
+
+  Widget setupAlertDialoadContainer() {
+    return Container(
+      height: 300.0, // Change as per your requirement
+      width: 300.0, // Change as per your requirement
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: 5,
+        itemBuilder: (BuildContext context, int index) {
+          return ListTile(
+            title: Text('Gujarat, India'),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<Map> leaderSelect(gameID, myID) async {
+    final check = await getCurrentPlayer(myID);
+    final response = await _firestore.document('games/$gameID/turn').get();
+    final json = response.data;
+    final index = json['index'];
+    final turnID = json['myTurn'];
+    print(check);
+    print(index);
+    print(turnID);
+    if (check == turnID) {}
   }
 
   @override
@@ -103,7 +167,9 @@ class _GameScreenState extends State<GameScreen> {
                       child: Container(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[Text('Missions Until Skirmish:')],
+                          children: <Widget>[
+                            Text('Missions Until Skirmish:$players')
+                          ],
                         ),
                         color: Colors.blue,
                       ),
@@ -146,7 +212,15 @@ class _GameScreenState extends State<GameScreen> {
                     ),
                     Expanded(
                       child: Container(
-                        color: Colors.orange,
+                        child: FlatButton(
+                          child: Text('Start Round'),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0)),
+                          color: Colors.white,
+                          onPressed: () {
+                            round();
+                          },
+                        ),
                       ),
                     ),
                   ],

@@ -25,7 +25,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String name = 'Player';
-  int playeramount;
+  int playeramount = 0;
   String userID;
 
   void initState() {}
@@ -57,12 +57,26 @@ class _MyHomePageState extends State<MyHomePage> {
     checkPlayers();
     if (playeramount > 10) {
       Navigator.pushNamed(context, '/gamefull');
+    } else if (playeramount == 0) {
+      saveTestData();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WaitScreen(
+            userID: userID,
+            origin: true,
+          ),
+        ),
+      );
     } else {
       saveTestData();
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => WaitScreen(userID: userID),
+          builder: (context) => WaitScreen(
+            userID: userID,
+            origin: false,
+          ),
         ),
       );
     }

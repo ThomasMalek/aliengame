@@ -5,24 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-//void pushSprintFeedbackForm(clientId, sprintDocId, data, source) async {
-//  //method to add client feedback to a sprint
-//  final resp = await _firestore.collection('players').add({
-//    'overallScore': data['overallScore'].toDouble(),
-//    'recommendScore': data['recommendScore'].toDouble(),
-//    'recommendComments': data['recommendComments'].toString(),
-//    'responsiveness': data['responsiveness'].toDouble(),
-//    'communication': data['communication'].toDouble(),
-//    'techSkills': data['techSkills'].toDouble(),
-//    'teamComments': data['teamComments'].toString(),
-//    'createdOn': new DateTime.now(),
-//    'source': source.toString(),
-//  });
-//
-//  print(resp.toString());
-//}
-//
-//
 Firestore _firestore = Firestore.instance;
 
 Future<String> pushDoc(coll, doc) async {
@@ -71,6 +53,13 @@ Future<List> getPlayerLists(gameID) async {
   return (snapshot.documents);
 }
 
+Future<List> getRoundsList(gameID) async {
+  DocumentSnapshot player;
+  final snapshot =
+      await _firestore.collection('games/$gameID/rounds').getDocuments();
+  return (snapshot.documents);
+}
+
 Future<Map> getPlayerInfo(userID) async {
   final response =
       await _firestore.document('/players/${userID.toString()}').get();
@@ -78,9 +67,17 @@ Future<Map> getPlayerInfo(userID) async {
 }
 
 Future<Map> getCurrentPlayer(userID) async {
-  final currentplayer =
+  final currentPlayer =
       await _firestore.collection('players').document(userID).get();
-  return (currentplayer.data);
+  return (currentPlayer.data);
+}
+
+void deletePlayers() async {
+  _firestore.collection('players').getDocuments().then((snapshot) {
+    for (DocumentSnapshot ds in snapshot.documents) {
+      ds.reference.delete();
+    }
+  });
 }
 
 List shuffle(List items) {
@@ -94,8 +91,4 @@ List shuffle(List items) {
     items[n] = temp;
   }
   return items;
-}
-
-Future<bool> normalRound(gameUID) async {
-  final players = getPlayerLists(gameUID);
 }

@@ -7,13 +7,15 @@ import 'dart:math';
 
 class WaitScreen extends StatefulWidget {
   String userID;
-  WaitScreen({Key key, this.userID}) : super(key: key);
+  bool origin;
+  WaitScreen({Key key, this.userID, this.origin}) : super(key: key);
   @override
   _WaitScreenState createState() => _WaitScreenState();
 }
 
 class _WaitScreenState extends State<WaitScreen> {
   List players;
+  bool boolCheckVar;
   String gameID;
   Map currentPlayer = {};
   var theTimer;
@@ -92,8 +94,17 @@ class _WaitScreenState extends State<WaitScreen> {
     getPlayerInfo(widget.userID);
   }
 
+  bool boolCheck() {
+    if (currentPlayer['origin'] == true) {
+      return (true);
+    } else {
+      return (false);
+    }
+  }
+
   void autoUpdater() {
     const oneSec = const Duration(seconds: 1);
+    getCurrentPlayer(widget.userID);
     theTimer = Timer.periodic(oneSec, (Timer t) => updatePlayers());
   }
 
@@ -101,30 +112,37 @@ class _WaitScreenState extends State<WaitScreen> {
     Map player = await getCurrentPlayer(userID);
   }
 
+  @override
   void dispose() {
     theTimer.cancel();
+    super.dispose();
   }
 
   void updatePlayers() async {
     setState(() {});
     players = await getPlayerList();
     currentPlayer = await getCurrentPlayer(widget.userID);
-    if (currentPlayer['newID'] != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GameScreen(
-            userID: currentPlayer['newID'],
-            gameUID: gameID,
+    if (currentPlayer != null) {
+      boolCheckVar = await boolCheck();
+      if (currentPlayer['newID'] != null) {
+        theTimer.cancel();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GameScreen(
+              userID: currentPlayer['newID'],
+              gameUID: gameID,
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
   }
 
   Future<String> createGame() async {
     final playerList = await getPlayerList();
     final gameUID = await pushDoc('games', {'name': 'Game'});
+    currentPlayer = await getCurrentPlayer(widget.userID);
     gameID = gameUID;
     for (DocumentSnapshot player in playerList) {
       final newPlayerID = await pushDoc('games/$gameUID/players', player.data);
@@ -135,16 +153,24 @@ class _WaitScreenState extends State<WaitScreen> {
       }
     }
     for (var city in cityList) {
-      print(city);
       final newCity = await pushDoc('games/$gameUID/rounds', {
         'cityimage': city['cityimage'],
         'teamControl': city['teamcontrol'],
         'cityName': city['cityName'],
-        'Population': city['Population']
+        'Population': city['Population'],
+        'Complete': false
       });
     }
-//    DELETE PLAYERS COLLECTION HERE
-//  except goes here to prevent data destruction
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GameScreen(
+          userID: currentPlayer['newID'],
+          gameUID: gameID,
+        ),
+      ),
+    );
+    deletePlayers();
     return (gameUID);
   }
 
@@ -185,6 +211,13 @@ class _WaitScreenState extends State<WaitScreen> {
             'games/$gameUID/players', docID, {'alien': true, 'leader': false});
       }
     }
+    final moresetup = await turnSetup();
+  }
+
+  void turnSetup() async {
+    final item = await getPlayerLists(gameID);
+    final resp = await pushDoc(
+        'games/$gameID/turn', {'index': 0, 'myTurn': item[0].documentID});
   }
 
   void gameSetup() async {
@@ -192,15 +225,6 @@ class _WaitScreenState extends State<WaitScreen> {
     if (availablePlayers.length >= 5 && availablePlayers.length <= 10) {
       String gameID = await createGame();
       generateTeams(players, gameID);
-//      Navigator.push(
-//        context,
-//        MaterialPageRoute(
-//          builder: (context) => GameScreen(
-//            userID: widget.userID,
-//            gameUID: gameID,
-//          ),
-//        ),
-//      );
     } else {
       print('Not Enough Players');
     }
@@ -266,7 +290,7 @@ class _WaitScreenState extends State<WaitScreen> {
                     ),
                   ),
                 ),
-                currentPlayer['origin'] == true
+                widget.origin == true
                     ? Container(
                         margin: EdgeInsets.only(bottom: 20.0),
                         child: FlatButton(
@@ -277,7 +301,7 @@ class _WaitScreenState extends State<WaitScreen> {
                           },
                         ),
                       )
-                    : Container(),
+                    : Container()
               ],
             ),
           ],
