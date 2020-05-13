@@ -17,6 +17,7 @@ class _WaitScreenState extends State<WaitScreen> {
   List players;
   bool boolCheckVar;
   String gameID;
+  String turnSet;
   Map currentPlayer = {};
   var theTimer;
   List<Map> cityList = [
@@ -122,8 +123,11 @@ class _WaitScreenState extends State<WaitScreen> {
     setState(() {});
     players = await getPlayerList();
     currentPlayer = await getCurrentPlayer(widget.userID);
+    final push = await updatePush();
+  }
+
+  void updatePush() async {
     if (currentPlayer != null) {
-      boolCheckVar = await boolCheck();
       if (currentPlayer['newID'] != null) {
         theTimer.cancel();
         Navigator.push(
@@ -131,11 +135,17 @@ class _WaitScreenState extends State<WaitScreen> {
           MaterialPageRoute(
             builder: (context) => GameScreen(
               userID: currentPlayer['newID'],
-              gameUID: gameID,
+              gameUID: currentPlayer['gameID'],
             ),
           ),
         );
       }
+    }
+  }
+
+  void idChange(player, newPlayerID) {
+    if (player.documentID == widget.userID) {
+      widget.userID = newPlayerID;
     }
   }
 
@@ -144,13 +154,15 @@ class _WaitScreenState extends State<WaitScreen> {
     final gameUID = await pushDoc('games', {'name': 'Game'});
     currentPlayer = await getCurrentPlayer(widget.userID);
     gameID = gameUID;
+    final turnSet = turnSetup();
     for (DocumentSnapshot player in playerList) {
       final newPlayerID = await pushDoc('games/$gameUID/players', player.data);
       final response = await addDoc('players', player.documentID,
           {'newID': newPlayerID, 'gameID': gameID});
-      if (player.documentID == widget.userID) {
-        widget.userID = newPlayerID;
-      }
+      final idChnge = await idChange(player, newPlayerID);
+//      if (player.documentID == widget.userID) {
+//        widget.userID = newPlayerID;
+//      }
     }
     for (var city in cityList) {
       final newCity = await pushDoc('games/$gameUID/rounds', {
@@ -161,16 +173,15 @@ class _WaitScreenState extends State<WaitScreen> {
         'Complete': false
       });
     }
-    Navigator.push(
+    theTimer.cancel();
+    deletePlayers();
+    final navPush = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => GameScreen(
-          userID: currentPlayer['newID'],
-          gameUID: gameID,
-        ),
+        builder: (context) =>
+            GameScreen(userID: widget.userID, gameUID: gameID, turnID: turnSet),
       ),
     );
-    deletePlayers();
     return (gameUID);
   }
 
@@ -211,18 +222,19 @@ class _WaitScreenState extends State<WaitScreen> {
             'games/$gameUID/players', docID, {'alien': true, 'leader': false});
       }
     }
-    final moresetup = await turnSetup();
   }
 
-  void turnSetup() async {
+  Future<String> turnSetup() async {
     final item = await getPlayerLists(gameID);
-    final resp = await pushDoc(
+    final respo = await pushDoc(
         'games/$gameID/turn', {'index': 0, 'myTurn': item[0].documentID});
+    return (respo);
   }
 
   void gameSetup() async {
     final availablePlayers = await getPlayerList();
-    if (availablePlayers.length >= 5 && availablePlayers.length <= 10) {
+//    TODO CHANGE BACK TO NORMAL LOGIC OF MIN 5 PLAYERS - SET FOR TESTING
+    if (availablePlayers.length >= 5 || availablePlayers.length <= 10) {
       String gameID = await createGame();
       generateTeams(players, gameID);
     } else {

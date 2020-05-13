@@ -53,12 +53,12 @@ class _MyHomePageState extends State<MyHomePage> {
     return (avatarnumber);
   }
 
-  void loginCheck() {
+  void loginCheck() async {
     checkPlayers();
     if (playeramount > 10) {
       Navigator.pushNamed(context, '/gamefull');
     } else if (playeramount == 0) {
-      saveTestData();
+      final save = await saveTestData();
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     } else {
-      saveTestData();
+      final save = await saveTestData();
       Navigator.push(
         context,
         MaterialPageRoute(
