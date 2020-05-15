@@ -154,7 +154,6 @@ class _WaitScreenState extends State<WaitScreen> {
     final gameUID = await pushDoc('games', {'name': 'Game'});
     currentPlayer = await getCurrentPlayer(widget.userID);
     gameID = gameUID;
-    final turnSet = turnSetup();
     for (DocumentSnapshot player in playerList) {
       final newPlayerID = await pushDoc('games/$gameUID/players', player.data);
       final response = await addDoc('players', player.documentID,
@@ -173,19 +172,21 @@ class _WaitScreenState extends State<WaitScreen> {
         'Complete': false
       });
     }
-    theTimer.cancel();
+    final turnSet = turnSetup();
+    final teamMake = generateTeams(players, gameUID);
+//    theTimer.cancel();
     deletePlayers();
     final navPush = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
-            GameScreen(userID: widget.userID, gameUID: gameID, turnID: turnSet),
+            GameScreen(userID: widget.userID, gameUID: gameID),
       ),
     );
     return (gameUID);
   }
 
-  Future<List> generateTeams(playerlist, gameUID) async {
+  void generateTeams(playerlist, gameUID) async {
     int teamNumber = playerlist.length;
     int aliens = 0;
     int humans = 0;
@@ -236,7 +237,7 @@ class _WaitScreenState extends State<WaitScreen> {
 //    TODO CHANGE BACK TO NORMAL LOGIC OF MIN 5 PLAYERS - SET FOR TESTING
     if (availablePlayers.length >= 5 || availablePlayers.length <= 10) {
       String gameID = await createGame();
-      generateTeams(players, gameID);
+//      generateTeams(players, gameID);
     } else {
       print('Not Enough Players');
     }

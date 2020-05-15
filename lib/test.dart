@@ -60,6 +60,13 @@ Future<List> getRoundsList(gameID) async {
   return (snapshot.documents);
 }
 
+Future<List> getVotesList(gameID) async {
+  DocumentSnapshot vote;
+  final snapshot =
+      await _firestore.collection('games/$gameID/vote').getDocuments();
+  return (snapshot.documents);
+}
+
 Future<Map> getPlayerInfo(userID) async {
   final response =
       await _firestore.document('/players/${userID.toString()}').get();
@@ -92,3 +99,5 @@ List shuffle(List items) {
   }
   return items;
 }
+
+//Dan is my universe
