@@ -358,6 +358,12 @@ class _GameScreenState extends State<GameScreen> {
                               color: Colors.greenAccent,
                               child: ListTile(
                                 title: Text(rounds[index]['cityName']),
+                                subtitle: Column(
+                                  children: <Widget>[
+                                    Text('Population'),
+                                    Text(rounds[index]['Population'])
+                                  ],
+                                ),
                                 leading: CircleAvatar(
                                   radius: 20.0,
                                   backgroundColor: Colors.grey,
